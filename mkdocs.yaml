@@ -1,0 +1,11 @@
+site_name: 'emporia'
+site_description: 'Main documentation for emporia'
+repo_url: https://github.com/jaysuzi5/emporia
+edit_uri: edit/main/docs
+
+plugins:
+  - techdocs-core
+
+nav:
+  - Overview:
+      - Getting started: 'docs/index.md'
