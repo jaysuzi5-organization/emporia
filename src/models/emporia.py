@@ -60,7 +60,7 @@ class emporia(Base):
 
 
 
-class DeviceUsageCreate(BaseModel):
+class emporiaCreate(BaseModel):
     """
     Pydantic schema for creating a new device usage entry.
 
