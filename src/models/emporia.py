@@ -20,9 +20,14 @@ class emporia(Base):
 
     Attributes:
         id (int): Primary key, unique identifier for the record.
-        username (str): Unique username, up to 50 characters. Cannot be null.
-        email (str): Unique email address, up to 120 characters. Cannot be null.
-        full_name (str | None): Optional full name of the user, up to 100 characters.
+        instant (datetime): Timestamp of the reading.
+        scale (str): Scale of measurement (e.g., '1D').
+        device_id (int): Device GID.
+        channel_num (str): Channel numbers (comma-separated).
+        name (str): Name of the device.
+        usage (float): Energy usage.
+        unit (str): Unit of measurement (e.g., 'KilowattHours').
+        percentage (float): Usage percentage.
         create_date (datetime): Timestamp when the record was created (UTC).
         update_date (datetime): Timestamp when the record was last updated (UTC).
 
@@ -36,8 +41,8 @@ class emporia(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     instant = Column(DateTime, nullable=False, index=True)
     scale = Column(String(10), nullable=False)
-    deviceGid = Column(Integer, nullable=False)
-    channelNum = Column(String(20), nullable=False)
+    device_id = Column(Integer, nullable=False)
+    channel_num = Column(String(20), nullable=False)
     name = Column(String(120), nullable=False, index=True)
     usage = Column(Float, nullable=False)
     unit = Column(String(20), nullable=False)
@@ -67,8 +72,8 @@ class emporiaCreate(BaseModel):
     Attributes:
         instant (datetime): Timestamp of the reading.
         scale (str): Scale of measurement (e.g., '1D').
-        deviceGid (int): Device GID.
-        channelNum (str): Channel numbers (comma-separated).
+        device_id (int): Device GID.
+        channel_num (str): Channel numbers (comma-separated).
         name (str): Name of the device.
         usage (float): Energy usage.
         unit (str): Unit of measurement (e.g., 'KilowattHours').
@@ -78,8 +83,8 @@ class emporiaCreate(BaseModel):
         {
             "instant": "2025-09-09T00:00:00Z",
             "scale": "1D",
-            "deviceGid": 138435,
-            "channelNum": "1,2,3",
+            "device_id": 138435,
+            "channel_num": "1,2,3",
             "name": "Electricity Monitor",
             "usage": 38.39137316071193,
             "unit": "KilowattHours"
@@ -88,8 +93,8 @@ class emporiaCreate(BaseModel):
     """
     instant: datetime
     scale: str
-    deviceGid: int
-    channelNum: str
+    device_id: int
+    channel_num: str
     name: str
     usage: float
     unit: str
