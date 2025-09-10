@@ -19,11 +19,11 @@
     </label>
     <label>
       Device GID:
-      <input type="number" id="deviceGid" required>
+      <input type="number" id="device_gid" required>
     </label>
     <label>
       Channel Numbers:
-      <input type="text" id="channelNum" required>
+      <input type="text" id="channel_num" required>
     </label>
     <label>
       Device Name:
@@ -119,8 +119,8 @@
               <td>${entry.id}</td>
               <td>${entry.instant ? new Date(entry.instant).toLocaleString() : ''}</td>
               <td>${entry.scale}</td>
-              <td>${entry.deviceGid}</td>
-              <td>${entry.channelNum}</td>
+              <td>${entry.device_gid}</td>
+              <td>${entry.channel_num}</td>
               <td>${entry.name}</td>
               <td>${entry.usage}</td>
               <td>${entry.unit}</td>
@@ -162,8 +162,8 @@
 
       const instant = document.getElementById('instant').value;
       const scale = document.getElementById('scale').value.trim();
-      const deviceGid = Number(document.getElementById('deviceGid').value);
-      const channelNum = document.getElementById('channelNum').value.trim();
+      const device_gid = Number(document.getElementById('device_gid').value);
+      const channel_num = document.getElementById('channel_num').value.trim();
       const name = document.getElementById('name').value.trim();
       const usage = parseFloat(document.getElementById('usage').value);
       const unit = document.getElementById('unit').value.trim();
@@ -172,7 +172,7 @@
       fetch(apiBase, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instant, scale, deviceGid, channelNum, name, usage, unit, percentage })
+        body: JSON.stringify({ instant, scale, device_gid, channel_num, name, usage, unit, percentage })
       })
       .then(async res => {
         const contentType = res.headers.get('content-type') || '';
