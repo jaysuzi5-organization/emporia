@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, asc
 from framework.db import get_db
+import logging
 from models.emporia import Emporia, EmporiaCreate, EmporiaSearch
 from typing import Optional
 
@@ -236,6 +237,9 @@ def search_emporia(
         if end_date:
             filters.append(Emporia.instant <= end_date)
 
+        print("start_date:", start_date, type(start_date))
+        logging.info(f"start_date: {start_date} and type {type(start_date)} ")
+
         # Build filters for other fields (scale, device_id, channel_num, etc.)
         for field, value in data.items():
             if hasattr(Emporia, field):
@@ -247,6 +251,7 @@ def search_emporia(
             query = query.filter(and_(*filters))
 
         query = query.order_by(asc(Emporia.instant))
+        logging.info(f'query: {query}')
         results = query.all()
 
         return [serialize_sqlalchemy_obj(record) for record in results]

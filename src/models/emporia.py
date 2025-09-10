@@ -122,6 +122,8 @@ class EmporiaSearch(BaseModel):
         }
     """
     instant: Optional[datetime] = None
+    start_date: Optional[datetime] = None  # extra search-only field
+    end_date: Optional[datetime] = None    # extra search-only field
     scale: Optional[str] = None
     device_id: Optional[int] = None
     channel_num: Optional[str] = None
