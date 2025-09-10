@@ -227,23 +227,26 @@ def search_emporia(
         filters = []
         data = search_data.model_dump(exclude_unset=True)
 
-        # Handle optional start_date / end_date against emporia.instant
+        # Handle optional start_date / end_date against Emporia.instant
         start_date: Optional[datetime] = data.pop("start_date", None)
         end_date: Optional[datetime] = data.pop("end_date", None)
 
         if start_date:
-            filters.append(EmporiaSearch.instant >= start_date)
+            filters.append(Emporia.instant >= start_date)
         if end_date:
-            filters.append(EmporiaSearch.instant <= end_date)
+            filters.append(Emporia.instant <= end_date)
 
-        # Build OR conditions for matching any field
+        # Build filters for other fields (scale, device_id, channel_num, etc.)
         for field, value in data.items():
-            if hasattr(EmporiaSearch, field):
-                column = getattr(EmporiaSearch, field)
+            if hasattr(Emporia, field):
+                column = getattr(Emporia, field)
                 filters.append(column == value)
 
-        query = db.query(EmporiaSearch).filter(and_(*filters))
-        query = query.order_by(asc(EmporiaSearch.instant))
+        query = db.query(Emporia)
+        if filters:
+            query = query.filter(and_(*filters))
+
+        query = query.order_by(asc(Emporia.instant))
         results = query.all()
 
         return [serialize_sqlalchemy_obj(record) for record in results]
