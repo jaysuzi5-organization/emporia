@@ -8,7 +8,7 @@ This module defines:
 """
 
 from sqlalchemy import Column, DateTime, Integer, String, Float
-from src.framework.db import Base
+from framework.db import Base
 from datetime import datetime, UTC
 from pydantic import BaseModel
 from typing import Optional
