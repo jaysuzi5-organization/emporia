@@ -3,7 +3,7 @@ emporia Model and Pydantic Schema
 
 This module defines:
 - The SQLAlchemy ORM model for persisting emporia data.
-- The Pydantic schema for validating API requests when creating a emporia.
+- The Pydantic schema for validating API requests when creating an Emporia record.
 
 """
 
@@ -14,9 +14,9 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class emporia(Base):
+class Emporia(Base):
     """
-    SQLAlchemy ORM model representing a emporia record.
+    SQLAlchemy ORM model representing an emporia record.
 
     Attributes:
         id (int): Primary key, unique identifier for the record.
@@ -65,7 +65,7 @@ class emporia(Base):
 
 
 
-class emporiaCreate(BaseModel):
+class EmporiaCreate(BaseModel):
     """
     Pydantic schema for creating a new device usage entry.
 
@@ -99,3 +99,33 @@ class emporiaCreate(BaseModel):
     usage: float
     unit: str
     percentage: float
+
+
+
+class EmporiaSearch(BaseModel):
+    """
+    Pydantic schema for searching for.
+
+    Attributes:
+        instant (datetime): Timestamp of the reading.
+        scale (str): Scale of measurement (e.g., '1D').
+        device_id (int): Device GID.
+        channel_num (str): Channel numbers (comma-separated).
+        name (str): Name of the device.
+        usage (float): Energy usage.
+        unit (str): Unit of measurement (e.g., 'KilowattHours').
+        percentage (float): Usage percentage.
+
+    Example:
+        {
+            "device_id": "138435"
+        }
+    """
+    instant: Optional[datetime] = None
+    scale: Optional[str] = None
+    device_id: Optional[int] = None
+    channel_num: Optional[str] = None
+    name: Optional[str] = None
+    usage: Optional[float] = None
+    unit: Optional[str] = None
+    percentage: Optional[float] = None

@@ -1,8 +1,11 @@
+from datetime import datetime, timedelta, UTC
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import and_, asc
 from framework.db import get_db
-from models.emporia import emporia, emporiaCreate
-from datetime import datetime, UTC
+from models.emporia import Emporia, EmporiaCreate, EmporiaSearch
+from typing import Optional
+
 
 router = APIRouter()
 
@@ -38,7 +41,7 @@ def list_emporia(
     """
     try:
         offset = (page - 1) * limit
-        emporia_records = db.query(emporia).offset(offset).limit(limit).all()
+        emporia_records = db.query(Emporia).offset(offset).limit(limit).all()
         return [serialize_sqlalchemy_obj(item) for item in emporia_records]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
@@ -46,14 +49,14 @@ def list_emporia(
 
 @router.post("/api/v1/emporia")
 def create_record(
-    emporia_data: emporiaCreate = Body(..., description="Data for the new record"),
+    emporia_data: EmporiaCreate = Body(..., description="Data for the new record"),
     db: Session = Depends(get_db)
 ):
     """
     Create a new emporia record.
 
     Args:
-        emporia_data (emporiaCreate): Data model for the record to create.
+        emporia_data (EmporiaCreate): Data model for the record to create.
         db (Session): SQLAlchemy database session.
 
     Returns:
@@ -61,7 +64,7 @@ def create_record(
     """
     try:
         data = emporia_data.model_dump(exclude_unset=True)
-        new_record = emporia(**data)
+        new_record = Emporia(**data)
         new_record.create_date = datetime.now(UTC)
         new_record.update_date = datetime.now(UTC)
 
@@ -92,7 +95,7 @@ def get_emporia_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException: If the record is not found.
     """
     try:
-        record = db.query(emporia).filter(emporia.id == id).first()
+        record = db.query(Emporia).filter(Emporia.id == id).first()
         if not record:
             raise HTTPException(status_code=404, detail=f"emporia with id {id} not found")
         return serialize_sqlalchemy_obj(record)
@@ -105,7 +108,7 @@ def get_emporia_by_id(id: int, db: Session = Depends(get_db)):
 @router.put("/api/v1/emporia/{id}")
 def update_emporia_full(
     id: int,
-    emporia_data: emporiaCreate = Body(..., description="Updated data for the record"),
+    emporia_data: EmporiaCreate = Body(..., description="Updated data for the record"),
     db: Session = Depends(get_db)
 ):
     """
@@ -113,7 +116,7 @@ def update_emporia_full(
 
     Args:
         id (int): The ID of the record to update.
-        emporia_data (emporiaCreate): Updated record data (all fields).
+        emporia_data (EmporiaCreate): Updated record data (all fields).
         db (Session): SQLAlchemy database session.
 
     Returns:
@@ -123,7 +126,7 @@ def update_emporia_full(
         HTTPException: If the record is not found.
     """
     try:
-        record = db.query(emporia).filter(emporia.id == id).first()
+        record = db.query(Emporia).filter(Emporia.id == id).first()
         if not record:
             raise HTTPException(status_code=404, detail=f"emporia with id {id} not found")
 
@@ -145,7 +148,7 @@ def update_emporia_full(
 @router.patch("/api/v1/emporia/{id}")
 def update_emporia_partial(
     id: int,
-    emporia_data: emporiaCreate = Body(..., description="Partial updated data for the record"),
+    emporia_data: EmporiaCreate = Body(..., description="Partial updated data for the record"),
     db: Session = Depends(get_db)
 ):
     """
@@ -153,7 +156,7 @@ def update_emporia_partial(
 
     Args:
         id (int): The ID of the record to update.
-        emporia_data (emporiaCreate): Partial updated data.
+        emporia_data (EmporiaCreate): Partial updated data.
         db (Session): SQLAlchemy database session.
 
     Returns:
@@ -163,7 +166,7 @@ def update_emporia_partial(
         HTTPException: If the record is not found.
     """
     try:
-        record = db.query(emporia).filter(emporia.id == id).first()
+        record = db.query(Emporia).filter(Emporia.id == id).first()
         if not record:
             raise HTTPException(status_code=404, detail=f"emporia with id {id} not found")
 
@@ -198,7 +201,7 @@ def delete_emporia(id: int, db: Session = Depends(get_db)):
         HTTPException: If the record is not found.
     """
     try:
-        record = db.query(emporia).filter(emporia.id == id).first()
+        record = db.query(Emporia).filter(Emporia.id == id).first()
         if not record:
             raise HTTPException(status_code=404, detail=f"emporia with id {id} not found")
 
@@ -209,4 +212,41 @@ def delete_emporia(id: int, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/api/v1/emporia/search")
+def search_emporia(
+    search_data: EmporiaSearch = Body(..., description="Search criteria"),
+    db: Session = Depends(get_db)
+):
+    """
+    Search for records matching any of the provided fields.
+    """
+    try:
+        filters = []
+        data = search_data.model_dump(exclude_unset=True)
+
+        # Handle optional start_date / end_date against emporia.instant
+        start_date: Optional[datetime] = data.pop("start_date", None)
+        end_date: Optional[datetime] = data.pop("end_date", None)
+
+        if start_date:
+            filters.append(EmporiaSearch.instant >= start_date)
+        if end_date:
+            filters.append(EmporiaSearch.instant <= end_date)
+
+        # Build OR conditions for matching any field
+        for field, value in data.items():
+            if hasattr(EmporiaSearch, field):
+                column = getattr(EmporiaSearch, field)
+                filters.append(column == value)
+
+        query = db.query(EmporiaSearch).filter(and_(*filters))
+        query = query.order_by(asc(EmporiaSearch.instant))
+        results = query.all()
+
+        return [serialize_sqlalchemy_obj(record) for record in results]
+
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
